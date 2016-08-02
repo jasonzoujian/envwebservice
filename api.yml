@@ -1,0 +1,238 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Beijing ENV API
+  description: TODO........
+  version: "1.0.0"
+# the domain of the service
+host: api.uber.com
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /v1.1
+produces:
+  - application/json
+paths:
+  /GetAllStationInfo:
+    get:
+      summary: 获取所有站点信息
+      description: |
+        获取所有站点信息
+      tags:
+        - Stations
+      responses:
+        200:
+          description: 所有站点信息
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+                format: int32
+                description:  0成功/非0失败
+              Result:  
+                type: array
+                items:
+                  $ref: '#/definitions/Station'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /GetAllInstruInfo:
+    get:
+      summary: GetAllInstruInfo
+      description: |
+        获取一个站点的所有仪器信息
+      parameters:
+        - name: StationNo
+          in: query
+          description: 站台的编号
+          required: true
+          type: string
+          format: uuid
+      tags:
+        - Instrument
+      responses:
+        200:
+          description: 该站点的所有仪器信息
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+                format: int32
+                description:  0成功/非0失败
+              Result:  
+                type: array
+                items:
+                  $ref: '#/definitions/Instrument'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /ConnectInstrument:
+    post:
+      summary: ConnectInstrument
+      description: 作用是启动中心端从子站查询参数实时数据，APP必须先调用此接口，才可以开始查看仪器的运行数据.
+      parameters:
+        - name: InstruNo
+          in: body
+          description: 仪器编号
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags:
+        - Instrument
+      responses:
+        200:
+          description: result of the connection 
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+                format: int32
+                description:  0成功/非0失败
+              Online:  
+                type: string
+                format: uuid
+                description: yes是在线，no是不在线
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /GetInstrumentData:
+    get:
+      summary: Get Instrument Data
+      description: 查询仪器数据实时值
+      tags:
+        - Instrument
+      parameters:
+        - name: InstruNo
+          in: query
+          description: 仪器编号
+          required: true
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: 仪器型号，仪器内数据的名称、单位、值
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+                format: int32
+                description:  0成功/非0失败
+              Result:  
+                type: array
+                items:
+                  $ref: '#/definitions/InstrumentData'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /SetInstrumentData:
+    post:
+      summary: Set Instrument Data
+      description: 设置仪器参数
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              StruNo:
+                type: string
+                format: uuid
+                description: 仪器编号
+              Tag:
+                type: integer
+                format: int32
+              Value:
+                type: integer
+                format: int32
+      tags:
+        - Instrument
+      responses:
+        200:
+          description: result of the action
+          schema:
+            type: object
+            properties:
+              Status:
+                type: integer
+                format: int32
+                description:  0成功/非0失败
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Station:
+    type: object
+    properties:
+      StationName:
+        type: string
+      StationNo:
+        type: string
+      IP:
+        type: string
+  Instrument:
+    type: object
+    properties:
+      InstruNo:
+        type: string
+        description: 仪器编号
+      Model:
+        type: string
+        description: 仪器型号
+      Online:
+        type: string
+        description: yes是在线，no是不在线
+  InstrumentData:
+    type: object
+    properties:
+      InstruNo:
+        type: string
+        description: 仪器编号
+      Tag:
+        type: string
+        description: 测量值的名称
+      Unit:
+        type: string
+        description: 单位
+      ValueType:
+        type: integer
+        format: int32
+        description: 0:浮点 ValueF; 1:整形 ValueI; 2:字符串;
+      ValueF:
+        type: number
+        format: double
+        description: 浮点值
+      ValueI:
+        type: integer
+        format: int32
+        description: 整数字
+      Date:
+        type: string
+        description: 日期
+      Hour:
+        type: integer
+        format: int32
+        description: 小时
+      
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
